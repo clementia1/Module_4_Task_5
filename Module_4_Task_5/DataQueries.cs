@@ -86,15 +86,16 @@ namespace Module_4_Task_5
             }).AsNoTracking().ToListAsync();
         }
 
-        public async Task<List<string>> GroupEmployeesByTitle()
+        public async Task GroupEmployeesByTitle()
         {
             var employees = await _context.Employees
-                .Where(employee => !employee.Title.Name.Contains("a"))
+                .GroupBy(employee => employee.Title.Name)
+                .Select(item => new
+                {
+                    item.Key,
+                })
+                .Where(j => !j.Key.Contains("a"))
                 .ToListAsync();
-
-            var employeesGroupedByTitle = employees.GroupBy(employee => employee.Title.Name).Select(g => g.Key).ToList();
-
-            return employeesGroupedByTitle;
         }
     }
 }
