@@ -95,6 +95,7 @@ namespace Module_4_Task_5
                     item.Key,
                 })
                 .Where(j => !j.Key.Contains("a"))
+                .AsNoTracking()
                 .ToListAsync();
         }
     }
