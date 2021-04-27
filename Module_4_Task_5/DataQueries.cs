@@ -79,11 +79,13 @@ namespace Module_4_Task_5
         public async Task DateDiff()
         {
             var projects = await _context.Projects.Select(p => new
-            {
-                Name = p.Name,
-                Budget = p.Budget,
-                TimeElapsed = EF.Functions.DateDiffMillisecond(p.StartedDate, DateTime.UtcNow)
-            }).AsNoTracking().ToListAsync();
+                {
+                    Name = p.Name,
+                    Budget = p.Budget,
+                    TimeElapsed = EF.Functions.DateDiffMillisecond(p.StartedDate, DateTime.UtcNow)
+                })
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task GroupEmployeesByTitle()
