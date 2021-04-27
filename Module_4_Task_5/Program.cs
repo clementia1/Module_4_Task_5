@@ -1,15 +1,17 @@
 ﻿using System;
-using System.IO;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Module_4_Task_5.Entities;
+using System.Threading.Tasks;
 
 namespace Module_4_Task_5
 {
     internal class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
+            await using (var context = new SampleContextFactory().CreateDbContext(args))
+            {
+                await new DataQueries(context).UpdateTwoEntities();
+            }
+
             Console.ReadKey();
         }
     }
