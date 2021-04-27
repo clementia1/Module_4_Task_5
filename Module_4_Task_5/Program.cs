@@ -9,7 +9,7 @@ namespace Module_4_Task_5
         {
             await using (var context = new SampleContextFactory().CreateDbContext(args))
             {
-                await new DataQueries(context).UpdateTwoEntities();
+                await new DataQueries(context).GroupEmployeesByTitle();
             }
 
             Console.ReadKey();

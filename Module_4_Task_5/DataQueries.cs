@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
@@ -13,29 +14,31 @@ namespace Module_4_Task_5
         public DataQueries(ApplicationContext context)
         {
             _context = context;
-        }/*
-
-        public async Task JoinTables()
-        {
-            var employees = _context.Employees.Select(p => new
-            {
-                Name = p.FirstName,
-                Title = p.TitleId,
-            });
-        }*/
+        }
 
         public async Task AddEmployee()
         {
             var title = await _context.Titles.SingleOrDefaultAsync(t => t.Name == "QA Engineer");
             var office = await _context.Offices.SingleOrDefaultAsync(t => t.Title == "Main Office");
+            var project = await _context.Projects.SingleOrDefaultAsync(p => p.Name == "SomeProject4");
 
-            _context.Employees.Add(new Employee
+            var newEmployee = new Employee
             {
                 FirstName = "John",
                 LastName = "Cena",
                 HiredDate = new DateTime(2016, 10, 28),
                 Title = title ?? new Title { Name = "QA Engineer" },
-                Office = office ?? new Office { Title = "Main Office", Location = "Kharkiv" },
+                Office = office ?? new Office { Title = "Main Office", Location = "Kharkiv" }
+            };
+
+            _context.Employees.Add(newEmployee);
+
+            _context.EmployeeProjects.Add(new EmployeeProject
+            {
+                Rate = 50,
+                StartedDate = DateTime.UtcNow,
+                Employee = newEmployee,
+                ProjectId = project.Id
             });
 
             await _context.SaveChangesAsync();
@@ -51,37 +54,47 @@ namespace Module_4_Task_5
 
         public async Task JoinThreeTables()
         {
-            var tables = await _context.Employees
-                .Join(
-                _context.Titles,
-                employee => employee.TitleId,
-                title => title.Id,
-                (employee, title) => new
+            var tables = await _context.Employees.Select(e => new
                 {
-                    employee,
-                    Title = title.Name
+                    Name = e.FirstName,
+                    Title = e.Title.Name,
+                    Office = e.Office.Title.DefaultIfEmpty()
                 })
-                .DefaultIfEmpty()
-                .Join(
-                _context.Offices,
-                joinedTables => joinedTables.employee.OfficeId,
-                office => office.Id,
-                (joinedTables, office) => new
-                {
-                    joinedTables,
-                    office
-                })
+                .AsNoTracking()
                 .ToListAsync();
-
-            /*var tables = await _context.Employees.Include(e => e.Office).DefaultIfEmpty().Include(e => e.Title).ToListAsync();*/
         }
 
         public async Task UpdateTwoEntities()
         {
-            _context.Offices.Add(new Office { Title = "Secondary Office", Location = "Dnipro" });
-            _context.Projects.Add(new Project { Name = "Some Project", Budget = 200000, StartedDate = DateTime.UtcNow, ClientId = _context.Clients.SingleOrDefault(c => c.Name == "Ciklum").Id });
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.LastName == "Cena");
+            employee.FirstName = "Steve";
+            employee.LastName = "Austin";
+
+            var office = await _context.Offices.FirstOrDefaultAsync(o => o.Title == "Main Office");
+            office.Location = "Kyiv";
 
             await _context.SaveChangesAsync();
+        }
+
+        public async Task DateDiff()
+        {
+            var projects = await _context.Projects.Select(p => new
+            {
+                Name = p.Name,
+                Budget = p.Budget,
+                TimeElapsed = EF.Functions.DateDiffMillisecond(p.StartedDate, DateTime.UtcNow)
+            }).AsNoTracking().ToListAsync();
+        }
+
+        public async Task<List<string>> GroupEmployeesByTitle()
+        {
+            var employees = await _context.Employees
+                .Where(employee => !employee.Title.Name.Contains("a"))
+                .ToListAsync();
+
+            var employeesGroupedByTitle = employees.GroupBy(employee => employee.Title.Name).Select(g => g.Key).ToList();
+
+            return employeesGroupedByTitle;
         }
     }
 }
