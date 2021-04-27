@@ -47,7 +47,11 @@ namespace Module_4_Task_5
         public async Task DeleteEntity()
         {
             var item = await _context.Employees.FirstOrDefaultAsync(e => e.FirstName == "John" && e.LastName == "Cena");
-            _context.Employees.Remove(item);
+
+            if (item != null)
+            {
+                _context.Employees.Remove(item);
+            }
 
             await _context.SaveChangesAsync();
         }
@@ -67,11 +71,19 @@ namespace Module_4_Task_5
         public async Task UpdateTwoEntities()
         {
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.LastName == "Cena");
-            employee.FirstName = "Steve";
-            employee.LastName = "Austin";
+
+            if (employee != null)
+            {
+                employee.FirstName = "Steve";
+                employee.LastName = "Austin";
+            }
 
             var office = await _context.Offices.FirstOrDefaultAsync(o => o.Title == "Main Office");
-            office.Location = "Kyiv";
+
+            if (office != null)
+            {
+                office.Location = "Kyiv";
+            }
 
             await _context.SaveChangesAsync();
         }
